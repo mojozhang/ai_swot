@@ -3,19 +3,13 @@ import { X } from 'lucide-react';
 import PropTypes from 'prop-types';
 
 function Settings({
-    apiKey,
-    setApiKey,
     modelName,
     setModelName,
-    baseUrl,
-    setBaseUrl,
     onClose
 }) {
     const [isCustomModel, setIsCustomModel] = useState(false);
     const [customModelInput, setCustomModelInput] = useState('');
 
-    // Comprehensive Gemini models list
-    // Comprehensive Gemini models list
     // Comprehensive Gemini models list
     const geminiModels = [
         { value: "gemini-2.0-flash", label: "Gemini 2.0 Flash (推荐)" },
@@ -77,37 +71,8 @@ function Settings({
                         </div>
                     </div>
                     <p style={{ fontSize: '0.875rem', marginTop: '0.5rem' }}>
-                        当前仅支持 Google 官方 Gemini API
+                        API Key 已在服务器端配置。
                     </p>
-                </div>
-
-                <div>
-                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600' }}>
-                        API 代理地址 (可选)
-                    </label>
-                    <input
-                        type="text"
-                        className="input"
-                        value={baseUrl}
-                        onChange={(e) => setBaseUrl(e.target.value)}
-                        placeholder="默认: https://generativelanguage.googleapis.com"
-                    />
-                    <p style={{ fontSize: '0.875rem', marginTop: '0.5rem' }}>
-                        如果你使用代理或中转服务，请在此填入地址。留空则使用 Google 官方地址。
-                    </p>
-                </div>
-
-                <div>
-                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600' }}>
-                        API Key
-                    </label>
-                    <input
-                        type="text"
-                        className="input"
-                        value={apiKey}
-                        onChange={(e) => setApiKey(e.target.value.replace(/[^\x00-\x7F]/g, '').trim())}
-                        placeholder="输入你的 Gemini API Key"
-                    />
                 </div>
 
                 <div>
@@ -143,40 +108,6 @@ function Settings({
                     </p>
                 </div>
 
-                <div style={{ marginTop: '0.5rem', padding: '0.75rem', background: 'rgba(255,255,255,0.05)', borderRadius: '8px' }}>
-                    <div className="flex justify-between items-center">
-                        <span style={{ fontSize: '0.875rem', fontWeight: '600' }}>调试工具</span>
-                        <button
-                            className="btn btn-secondary btn-sm"
-                            onClick={async () => {
-                                if (!apiKey) return alert('请先输入 API Key');
-                                const defaultBaseUrl = "https://generativelanguage.googleapis.com";
-                                const apiBase = (baseUrl || defaultBaseUrl).replace(/\/+$/, "");
-                                const url = `${apiBase}/v1beta/models?key=${apiKey}`;
-
-                                try {
-                                    alert(`正在连接: ${url.replace(apiKey, '***')} ...`);
-                                    const res = await fetch(url);
-                                    const data = await res.json();
-                                    if (data.models) {
-                                        const names = data.models.map(m => m.name.replace('models/', '')).join('\n');
-                                        alert(`连接成功！可用模型:\n${names}`);
-                                    } else {
-                                        alert(`连接成功，但返回格式异常:\n${JSON.stringify(data, null, 2)}`);
-                                    }
-                                } catch (e) {
-                                    alert(`连接失败:\n${e.message}`);
-                                }
-                            }}
-                        >
-                            测试连接 & 列出模型
-                        </button>
-                    </div>
-                    <p style={{ fontSize: '0.75rem', marginTop: '0.5rem', opacity: 0.7 }}>
-                        如果报错 404，点这个按钮看看服务器到底支持哪些模型。
-                    </p>
-                </div>
-
                 <div className="flex justify-end" style={{ marginTop: '1rem' }}>
                     <button onClick={onClose} className="btn btn-primary">
                         保存并关闭
@@ -188,12 +119,8 @@ function Settings({
 }
 
 Settings.propTypes = {
-    apiKey: PropTypes.string.isRequired,
-    setApiKey: PropTypes.func.isRequired,
     modelName: PropTypes.string.isRequired,
     setModelName: PropTypes.func.isRequired,
-    baseUrl: PropTypes.string,
-    setBaseUrl: PropTypes.func.isRequired,
     onClose: PropTypes.func.isRequired
 };
 

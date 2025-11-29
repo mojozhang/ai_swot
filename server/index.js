@@ -22,13 +22,14 @@ app.get('/', (req, res) => {
 // Proxy endpoint for Chat (Gemini Only via REST API)
 app.post('/api/chat', async (req, res) => {
     console.log('Received request:', new Date().toISOString());
-    const { messages } = req.body;
+    const { messages, model } = req.body;
 
     try {
-        console.log(`Using hardcoded model: ${MODEL_NAME}`);
+        const targetModel = model || MODEL_NAME;
+        console.log(`Using model: ${targetModel}`);
 
         // Construct the REST API URL (v1beta is required for newer models)
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent?key=${API_KEY}`;
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${targetModel}:generateContent?key=${API_KEY}`;
 
         let contents = [];
 
