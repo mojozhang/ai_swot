@@ -58,8 +58,8 @@ app.post('/api/chat', async (req, res) => {
 
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({}));
-            const errorMsg = errorData.error?.message || `HTTP Error ${response.status} ${response.statusText}`;
-            console.error('Gemini REST API Error Response:', errorData);
+            console.error('Gemini REST API Error Response:', JSON.stringify(errorData, null, 2));
+            const errorMsg = JSON.stringify(errorData.error) || `HTTP Error ${response.status} ${response.statusText}`;
             throw new Error(errorMsg);
         }
 
