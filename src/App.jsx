@@ -1,33 +1,17 @@
-import { useState, useEffect } from 'react';
-import { MessageSquare, FileText, Zap, Settings as SettingsIcon, BrainCircuit, Sparkles } from 'lucide-react';
+import { useState } from 'react';
+import { MessageSquare, FileText, Zap, BrainCircuit } from 'lucide-react';
 import GuidedMode from './components/GuidedMode';
 import ReviewMode from './components/ReviewMode';
 import AutoMode from './components/AutoMode';
-import Settings from './components/Settings';
 
 function App() {
   const [activeTab, setActiveTab] = useState('guided');
-  const [showSettings, setShowSettings] = useState(false);
 
-  // Only manage Gemini key
-  const [apiKey, setApiKey] = useState(localStorage.getItem('gemini_api_key') || '');
-  const [modelName, setModelName] = useState(localStorage.getItem('gemini_model_name') || 'gemini-1.5-flash');
-  const [baseUrl, setBaseUrl] = useState(localStorage.getItem('gemini_base_url') || '');
-
-  // Hardcoded provider settings
+  // Hardcoded provider settings (handled by server now)
   const provider = 'gemini';
-
-  useEffect(() => {
-    localStorage.setItem('gemini_api_key', apiKey);
-  }, [apiKey]);
-
-  useEffect(() => {
-    localStorage.setItem('gemini_model_name', modelName);
-  }, [modelName]);
-
-  useEffect(() => {
-    localStorage.setItem('gemini_base_url', baseUrl);
-  }, [baseUrl]);
+  const apiKey = 'SERVER_MANAGED';
+  const modelName = 'gemini-2.0-flash';
+  const baseUrl = '';
 
   return (
     <div className="container" style={{ padding: '2rem 1rem' }}>
@@ -42,93 +26,47 @@ function App() {
           }}>
             <BrainCircuit size={24} color="white" />
           </div>
-          <h1>SWOT 分析助手 (Gemini 版)</h1>
+          <h1>SWOT 分析助手 (Gemini 2.0 Flash)</h1>
         </div>
-        <button
-          className="btn btn-ghost"
-          onClick={() => setShowSettings(true)}
-        >
-          <SettingsIcon size={20} />
-          设置
-        </button>
       </header>
 
-      {showSettings && (
-        <div style={{
-          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-          backgroundColor: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          zIndex: 1000
-        }}>
-          <Settings
-            apiKey={apiKey}
-            setApiKey={setApiKey}
-            modelName={modelName}
-            setModelName={setModelName}
-            baseUrl={baseUrl}
-            setBaseUrl={setBaseUrl}
-            onClose={() => setShowSettings(false)}
-          />
-        </div>
-      )}
-
-      {!apiKey && !showSettings && (
-        <div className="card animate-fade-in" style={{ textAlign: 'center', padding: '3rem' }}>
-          <div style={{ marginBottom: '1.5rem' }}>
-            <Sparkles size={48} color="#a855f7" />
+      <div className="animate-fade-in">
+        <nav className="nav-tabs">
+          <div
+            className={`nav-tab ${activeTab === 'guided' ? 'active' : ''}`}
+            onClick={() => setActiveTab('guided')}
+          >
+            <div className="flex items-center justify-center gap-sm">
+              <MessageSquare size={18} />
+              <span>引导式访谈</span>
+            </div>
           </div>
-          <h2 style={{ marginBottom: '1rem' }}>欢迎使用 SWOT 分析助手</h2>
-          <p style={{ marginBottom: '2rem', maxWidth: '600px', margin: '0 auto 2rem' }}>
-            这是一个专业的 AI 辅助工具，帮助你进行深度 SWOT 分析。
-            <br />
-            请先在设置中配置你的 Gemini API Key。
-          </p>
-          <button className="btn btn-primary" onClick={() => setShowSettings(true)}>
-            <SettingsIcon size={20} />
-            配置 API Key
-          </button>
-        </div>
-      )}
+          <div
+            className={`nav-tab ${activeTab === 'review' ? 'active' : ''}`}
+            onClick={() => setActiveTab('review')}
+          >
+            <div className="flex items-center justify-center gap-sm">
+              <FileText size={18} />
+              <span>评审与优化</span>
+            </div>
+          </div>
+          <div
+            className={`nav-tab ${activeTab === 'auto' ? 'active' : ''}`}
+            onClick={() => setActiveTab('auto')}
+          >
+            <div className="flex items-center justify-center gap-sm">
+              <Zap size={18} />
+              <span>全自动生成</span>
+            </div>
+          </div>
+        </nav>
 
-      {apiKey && (
-        <div className="animate-fade-in">
-          <nav className="nav-tabs">
-            <div
-              className={`nav-tab ${activeTab === 'guided' ? 'active' : ''}`}
-              onClick={() => setActiveTab('guided')}
-            >
-              <div className="flex items-center justify-center gap-sm">
-                <MessageSquare size={18} />
-                <span>引导式访谈</span>
-              </div>
-            </div>
-            <div
-              className={`nav-tab ${activeTab === 'review' ? 'active' : ''}`}
-              onClick={() => setActiveTab('review')}
-            >
-              <div className="flex items-center justify-center gap-sm">
-                <FileText size={18} />
-                <span>评审与优化</span>
-              </div>
-            </div>
-            <div
-              className={`nav-tab ${activeTab === 'auto' ? 'active' : ''}`}
-              onClick={() => setActiveTab('auto')}
-            >
-              <div className="flex items-center justify-center gap-sm">
-                <Zap size={18} />
-                <span>全自动生成</span>
-              </div>
-            </div>
-          </nav>
-
-          <main>
-            {activeTab === 'guided' && <GuidedMode apiKey={apiKey} modelName={modelName} provider={provider} baseUrl={baseUrl} />}
-            {activeTab === 'review' && <ReviewMode apiKey={apiKey} modelName={modelName} provider={provider} baseUrl={baseUrl} />}
-            {activeTab === 'auto' && <AutoMode apiKey={apiKey} modelName={modelName} provider={provider} baseUrl={baseUrl} />}
-          </main>
-        </div>
-      )}
+        <main>
+          {activeTab === 'guided' && <GuidedMode apiKey={apiKey} modelName={modelName} provider={provider} baseUrl={baseUrl} />}
+          {activeTab === 'review' && <ReviewMode apiKey={apiKey} modelName={modelName} provider={provider} baseUrl={baseUrl} />}
+          {activeTab === 'auto' && <AutoMode apiKey={apiKey} modelName={modelName} provider={provider} baseUrl={baseUrl} />}
+        </main>
+      </div>
     </div>
   );
 }

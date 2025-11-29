@@ -1,6 +1,6 @@
-import { createGeminiClient } from './geminiClient';
+import { createServerService } from './serverService';
 
 export const createAIService = (provider, apiKey, modelName, baseUrl) => {
-    // Ignore provider, force Gemini Client but pass baseUrl
-    return createGeminiClient(apiKey, modelName, baseUrl);
+    // Ignore params, server handles everything
+    return createServerService();
 };

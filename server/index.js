@@ -18,6 +18,10 @@ const PORT = 3001;
 app.use(cors());
 app.use(bodyParser.json());
 
+// Hardcoded Configuration
+const API_KEY = 'AIzaSyDGKVA6eH2CDXwSB6FNmOU98tJjLejaAfY';
+const MODEL_NAME = 'gemini-2.0-flash';
+
 // Health check endpoint
 app.get('/', (req, res) => {
     res.send('SWOT Analysis API Server is running! (SWOT 分析助手后台服务已启动)');
@@ -26,18 +30,13 @@ app.get('/', (req, res) => {
 // Proxy endpoint for Chat (Gemini Only)
 app.post('/api/chat', async (req, res) => {
     console.log('Received request:', new Date().toISOString());
-    const { apiKey, model, messages } = req.body;
-
-    if (!apiKey) {
-        console.error('Error: API Key is missing');
-        return res.status(400).json({ error: 'API Key is required' });
-    }
+    const { messages } = req.body;
 
     try {
-        console.log(`Using model: ${model || 'gemini-1.5-flash'}`);
-        // Default to Gemini
-        const genAI = new GoogleGenerativeAI(apiKey);
-        const geminiModel = genAI.getGenerativeModel({ model: model || 'gemini-1.5-flash' });
+        console.log(`Using hardcoded model: ${MODEL_NAME}`);
+
+        const genAI = new GoogleGenerativeAI(API_KEY);
+        const geminiModel = genAI.getGenerativeModel({ model: MODEL_NAME });
 
         let chatHistory = [];
         let lastMessage = '';
@@ -67,7 +66,6 @@ app.post('/api/chat', async (req, res) => {
 
     } catch (error) {
         console.error('Gemini API Error:', error);
-        // Ensure we send a string message
         const errorMessage = error.message || 'Unknown error occurred';
         res.status(500).json({ error: errorMessage });
     }
