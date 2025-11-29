@@ -34,7 +34,7 @@ function App() {
           }}>
             <BrainCircuit size={24} color="white" />
           </div>
-          <h1>SWOT 分析助手 (Gemini 2.0 Flash)</h1>
+          <h1>SWOT 分析助手 (Gemini 2.0 Flash) <span style={{ fontSize: '0.8em', opacity: 0.7 }}>v0.9</span></h1>
         </div>
         <button
           className="btn btn-ghost"

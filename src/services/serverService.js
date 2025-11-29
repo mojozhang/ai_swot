@@ -37,6 +37,8 @@ export const createServerService = (provider, apiKey, modelName, baseUrl) => {
             return data.content;
         } catch (error) {
             console.error("Server API Error:", error);
+            // Attach model name for debugging
+            error.failedModel = modelName;
             throw error;
         }
     };
