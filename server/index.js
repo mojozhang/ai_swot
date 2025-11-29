@@ -1,16 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import bodyParser from 'body-parser';
-import { GoogleGenerativeAI } from '@google/generative-ai';
 import fetch from 'node-fetch';
-
-// Polyfill fetch for Node.js environments that might need it for the SDK
-if (!global.fetch) {
-    global.fetch = fetch;
-    global.Headers = fetch.Headers;
-    global.Request = fetch.Request;
-    global.Response = fetch.Response;
-}
 
 const app = express();
 const PORT = 3001;
@@ -20,6 +11,7 @@ app.use(bodyParser.json());
 
 // Hardcoded Configuration
 const API_KEY = 'AIzaSyDGKVA6eH2CDXwSB6FNmOU98tJjLejaAfY';
+// Use the model that was confirmed to exist in the user's test
 const MODEL_NAME = 'gemini-2.0-flash';
 
 // Health check endpoint
@@ -27,7 +19,7 @@ app.get('/', (req, res) => {
     res.send('SWOT Analysis API Server is running! (SWOT 分析助手后台服务已启动)');
 });
 
-// Proxy endpoint for Chat (Gemini Only)
+// Proxy endpoint for Chat (Gemini Only via REST API)
 app.post('/api/chat', async (req, res) => {
     console.log('Received request:', new Date().toISOString());
     const { messages } = req.body;
@@ -35,34 +27,51 @@ app.post('/api/chat', async (req, res) => {
     try {
         console.log(`Using hardcoded model: ${MODEL_NAME}`);
 
-        const genAI = new GoogleGenerativeAI(API_KEY);
-        const geminiModel = genAI.getGenerativeModel({ model: MODEL_NAME });
+        // Construct the REST API URL (v1beta is required for newer models)
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent?key=${API_KEY}`;
 
-        let chatHistory = [];
-        let lastMessage = '';
+        let contents = [];
 
         if (messages && Array.isArray(messages)) {
-            // Convert standard format [{role, content}] to Gemini format
-            const geminiHistory = messages.slice(0, -1).map(msg => ({
+            // Convert standard format [{role, content}] to Gemini REST format
+            contents = messages.map(msg => ({
                 role: msg.role === 'assistant' ? 'model' : 'user',
                 parts: [{ text: msg.content }]
             }));
-
-            lastMessage = messages[messages.length - 1].content;
-            chatHistory = geminiHistory;
         } else {
             console.error('Error: Invalid messages format');
             return res.status(400).json({ error: "Invalid messages format" });
         }
 
-        console.log('Sending message to Gemini...');
-        const chat = geminiModel.startChat({ history: chatHistory });
-        const result = await chat.sendMessage(lastMessage);
-        const response = await result.response;
-        const text = response.text();
+        console.log(`Sending request to: ${url.replace(API_KEY, 'HIDDEN_KEY')}`);
 
-        console.log('Gemini response received successfully');
-        res.json({ content: text });
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                contents: contents
+            })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            const errorMsg = errorData.error?.message || `HTTP Error ${response.status} ${response.statusText}`;
+            console.error('Gemini REST API Error Response:', errorData);
+            throw new Error(errorMsg);
+        }
+
+        const data = await response.json();
+
+        // Extract text from response
+        if (data.candidates && data.candidates.length > 0 && data.candidates[0].content) {
+            const text = data.candidates[0].content.parts[0].text;
+            console.log('Gemini response received successfully');
+            res.json({ content: text });
+        } else {
+            throw new Error("Empty response from Gemini API");
+        }
 
     } catch (error) {
         console.error('Gemini API Error:', error);
